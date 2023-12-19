@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload Audios</title>
+
+</head>
+<body>
+<form action="/upload/1" method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form }}
+    <div style="padding: 6px">
+        <input type="submit" value="Load song">
+    </div>
+</form>
+</body>
+</html>

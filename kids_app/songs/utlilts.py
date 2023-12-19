@@ -1,9 +1,13 @@
 import os.path
+from basic_pitch.inference import predict
+
 from visual_midi import Plotter
 from visual_midi import Preset
 from pretty_midi import PrettyMIDI
 
 from bs4 import BeautifulSoup
+
+from django.core.files.storage import FileSystemStorage
 
 
 def midi_to_block(midi_path: str, target_path):
@@ -28,3 +32,16 @@ def midi_to_block(midi_path: str, target_path):
         )
 
 
+def handle_uploaded_file(file):
+    fss = FileSystemStorage()
+    file = fss.save(file.name, file)
+    file_url = fss.url(file)
+
+    return file_url
+
+
+def audio_to_midi(audio, output_path):
+    model_output, midi_data, note_events = predict(audio)
+    midi_data.write(output_path)
+
+    return output_path
