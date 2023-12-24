@@ -6,6 +6,11 @@
 - `python manage.py makemigrations`
 - `python manage.py migrate`
 - `python manage.py runserver`
+
+## Инструкция Docker compose: 
+- docker build
+- docker-compose up
+- http://127.0.0.1:8000/upload/
   
 ## Для тестирования
 - открываем ссылку `http://127.0.0.1:8000/upload/`
