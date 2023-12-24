@@ -8,9 +8,9 @@
 - `python manage.py runserver`
 
 ## Инструкция Docker compose: 
-- `docker build`
+- `docker-compose build`
 - `docker-compose up`
-  
+
 ## Для тестирования
 - открываем ссылку `http://127.0.0.1:8000/upload/`
 - загружаем аудио файл
