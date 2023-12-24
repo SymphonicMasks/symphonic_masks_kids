@@ -5,20 +5,26 @@
     <title>Title</title>
 </head>
 <body>
-<h1>aaaaaaaaaaaaaaaaaa</h1>
-<form action="/" method="GET">
-    <label for="song">Выбирай песню: </label>
-    <select name="song" id="song">
-        <option value="">...</option>
-        {% for song in songs %}
-            <option value="{{ song.id }}">{{ song.title }}</option>
-        {% endfor %}
-    </select>
-    <label for="audio">Загрузить свою игру</label>
-    <input type="file" id="audio">
-    <input type="submit" value="Load song">
-</form>
+<h1>Привет!</h1>
 
+<form action="/upload/" method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div style="padding: 5px">
+        <label for="song">Выбирай песню: </label>
+        <select name="song" id="song">
+            <option value="">...</option>
+            {% for song in songs %}
+                <option value="{{ song.id }}">{{ song.title }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div style="padding: 5px">
+        {{ form }}
+    </div>
+    <div style="padding: 6px">
+        <input type="submit" value="Load song">
+    </div>
+</form>
 
 </body>
 </html>

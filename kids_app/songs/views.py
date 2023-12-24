@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 from .utlilts import midi_to_block, handle_uploaded_file, audio_to_midi
 from .forms import UploadFileForm
 from django.conf import settings
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, reverse
 from .models import Song
 
 
@@ -17,17 +17,34 @@ def index(request):
         return redirect(f"song/{song_id}", context={})
 
     songs = Song.objects.all()
-    context = {"songs": songs}
+    form = UploadFileForm()
+    context = {
+        "songs": songs,
+        "form": form
+    }
+
     return render(request, "index.html", context=context)
 
 
 def view_song(request, song_id: int):
     song = Song.objects.get(pk=song_id)
+    context = {
+        "user_input_block": None,
+    }
+    if request.session.has_key("user_id"):
+        user_id = request.session.get("user_id")
+        midi_template = f"user_midi/{user_id}/{song.title}.html"
+        context = {
+            "user_input_block": midi_template,
+        }
+
     midi_path = song.midi_path
     midi_template = f"songs/{song.title}.html"
     midi_to_block(midi_path, "templates/" + midi_template)
 
-    return render(request, midi_template)
+    context["song_midi"] = midi_template
+
+    return render(request, "main.html", context)
 
 
 def upload_audio(request):
@@ -37,11 +54,18 @@ def upload_audio(request):
 
     else:
         file = request.FILES["file"]
+        song_id = request.POST["song"]
         file_url = handle_uploaded_file(file)
         file_name = file.name.split(".")[0]
         media = settings.MEDIA_ROOT
-        audio_to_midi(media+"/"+file.name, "data/midi/"+file_name+".midi")
-        song = Song(title=file_name)
-        song.save()
+        song = Song.objects.get(pk=song_id)
 
+        user_id = 1
+        audio_to_midi(media+"/"+file.name, "data/midi/"+file_name+".midi")
+        midi_template = f"user_midi/{user_id}/{song.title}.html"
+        midi_path = "data/midi/"+file_name+".midi"
+        midi_to_block(midi_path, "templates/" + midi_template)
+
+
+        request.session["user_id"] = 1
         return redirect(f"/song/{song.id}", request)

@@ -11,9 +11,11 @@
     </script>
 </head>
 <body>
-{% block song_midi %}
-{% endblock %}
+{% include song_midi %}
 
+{% if user_input_block is not None %}
+    {% include user_input_block%}
+{% endif %}
 {#{% block user_midi %}#}
 {#    {% include "user_midi/1.html" %}#}
 {#{% endblock %}#}

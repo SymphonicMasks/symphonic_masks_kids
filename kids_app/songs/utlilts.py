@@ -14,6 +14,7 @@ def midi_to_block(midi_path: str, target_path):
     pm = PrettyMIDI(midi_path)
     pm.estimate_beat_start()
     plotter = Plotter()
+    pm.get_piano_roll()
     plotter.save(pm, target_path)
 
     with open(target_path, "r") as f:
@@ -25,11 +26,10 @@ def midi_to_block(midi_path: str, target_path):
 
     with open(target_path, "w") as f:
         f.write(
-            '{% extends "../main.html" %}\n' +
-            '{% block song_midi %}' +
-            str(soup).replace("<!DOCTYPE html>", "") +
-            '{% endblock %}'
+            str(soup).replace("<!DOCTYPE html>", "")
         )
+
+    return target_path
 
 
 def handle_uploaded_file(file):
