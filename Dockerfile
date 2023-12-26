@@ -14,8 +14,8 @@ COPY kids_app/requirements.txt /app/
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 RUN pip install ffmpeg
-RUN python manage.py makemigrations
-RUN python manage.py migrate
 
 COPY kids_app /app/
 
+RUN python manage.py makemigrations
+RUN python manage.py migrate
