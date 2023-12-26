@@ -6,6 +6,7 @@ from pretty_midi import PrettyMIDI
 from bs4 import BeautifulSoup
 from .utlilts import midi_to_block, handle_uploaded_file, audio_to_midi
 from .forms import UploadFileForm
+from django.db import IntegrityError
 from django.conf import settings
 from django.shortcuts import render, redirect, reverse
 from .models import Song
@@ -37,6 +38,7 @@ def view_song(request, song_id: int):
         context = {
             "user_input_block": midi_template,
         }
+        del request.session['user_id']
 
     midi_path = song.midi_path
     midi_template = f"songs/{song.title}.html"
@@ -54,14 +56,24 @@ def upload_audio(request):
 
     else:
         file = request.FILES["file"]
-        song_id = request.POST["song"]
         file_url = handle_uploaded_file(file)
         file_name = file.name.split(".")[0]
         media = settings.MEDIA_ROOT
+        audio_to_midi(media+"/"+file.name, "data/midi/"+file_name+".midi")
+
+        if "song" not in request.POST.keys():
+            try:
+                song = Song(title=file_name)
+                song.save()
+            except IntegrityError as e:
+                song = Song.objects.get(title=file_name)
+
+            return redirect(f"/song/{song.id}", request)
+
+        song_id = request.POST["song"]
         song = Song.objects.get(pk=song_id)
 
         user_id = 1
-        audio_to_midi(media+"/"+file.name, "data/midi/"+file_name+".midi")
         midi_template = f"user_midi/{user_id}/{song.title}.html"
         midi_path = "data/midi/"+file_name+".midi"
         midi_to_block(midi_path, "templates/" + midi_template)
