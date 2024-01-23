@@ -1,15 +1,14 @@
 import os.path
-from visual_midi import Plotter
-from visual_midi import Preset
 from pretty_midi import PrettyMIDI
 
 from bs4 import BeautifulSoup
-from .utlilts import midi_to_block, handle_uploaded_file, audio_to_midi
+from .utlilts import handle_uploaded_file, audio_to_midi
 from .forms import UploadFileForm
 from django.db import IntegrityError
 from django.conf import settings
 from django.shortcuts import render, redirect, reverse
 from .models import Song
+from infrastructure import basic_pitcher, music21_renderer
 
 
 def index(request):
@@ -42,7 +41,7 @@ def view_song(request, song_id: int):
 
     midi_path = song.midi_path
     midi_template = f"songs/{song.title}.html"
-    midi_to_block(midi_path, "templates/" + midi_template)
+    # midi_to_block(midi_path, "templates/" + midi_template)
 
     context["song_midi"] = midi_template
 
@@ -59,7 +58,7 @@ def upload_audio(request):
         file_url = handle_uploaded_file(file)
         file_name = file.name.split(".")[0]
         media = settings.MEDIA_ROOT
-        audio_to_midi(media+"/"+file.name, "data/midi/"+file_name+".midi")
+        midi_data = basic_pitcher(media + "/" + file.name, "data/midi/" + file_name + ".midi")
 
         if "song" not in request.POST.keys():
             try:
@@ -75,9 +74,8 @@ def upload_audio(request):
 
         user_id = 1
         midi_template = f"user_midi/{user_id}/{song.title}.html"
-        midi_path = "data/midi/"+file_name+".midi"
-        midi_to_block(midi_path, "templates/" + midi_template)
-
-
+        midi_path = "data/midi/" + file_name + ".midi"
+        # midi_to_block(midi_path, "templates/" + midi_template)
+        music21_renderer.generate_html_block(midi_data=midi_data)
         request.session["user_id"] = 1
         return redirect(f"/song/{song.id}", request)
