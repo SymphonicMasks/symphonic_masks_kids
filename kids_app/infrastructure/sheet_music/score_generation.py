@@ -1,18 +1,18 @@
 import os
 from pathlib import Path
-from typing import List, Dict, Any, Optional, Union, Tuple
+from typing import List, Optional, Union, Tuple
 
 import music21.stream
 from django.conf import settings
 import pretty_midi
-from music21 import environment, stream, converter, musicxml
+from music21 import environment, stream
 from music21.note import Note
 
 
 class SheetGenerator:
     def __init__(self, fractions: List[float], pause_fractions: List[float], default_path: Path):
         self.fractions = fractions
-        self.pause_fractions = fractions
+        self.pause_fractions = pause_fractions
         self.default_path = default_path
         self.env = environment.Environment
         us = environment.UserSettings()
