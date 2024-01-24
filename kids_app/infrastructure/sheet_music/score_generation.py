@@ -1,16 +1,18 @@
 import os
 from pathlib import Path
-from typing import List, Dict, Any, Optional, Union
+from typing import List, Dict, Any, Optional, Union, Tuple
 
 import music21.stream
+from django.conf import settings
 import pretty_midi
 from music21 import environment, stream, converter, musicxml
 from music21.note import Note
 
 
 class SheetGenerator:
-    def __init__(self, fractions: List[float], default_path: Path):
+    def __init__(self, fractions: List[float], pause_fractions: List[float], default_path: Path):
         self.fractions = fractions
+        self.pause_fractions = fractions
         self.default_path = default_path
         self.env = environment.Environment
         us = environment.UserSettings()
@@ -18,13 +20,14 @@ class SheetGenerator:
         if not os.path.exists(us_path):
             us.create()
 
-        # us['musescoreDirectPNGPath'] = r'C:\Program Files\MuseScore 4\bin\MuseScore4.exe'  # describe in .env
-        # us['musicxmlPath'] = r'C:\Program Files\MuseScore 4\bin\MuseScore4.exe'
-        # us['lilypondPath'] = r'"C:\Program Files\lilypond-2.24.3\bin\lilypond.exe"'
+        us['musescoreDirectPNGPath'] = settings.musescoreDirectPNGPath
+        us['musicxmlPath'] = settings.musicxmlPath
+        us['lilypondPath'] = settings.lilypondPath
 
-    def _get_notes_from_midi(self, midi_data: pretty_midi.PrettyMIDI) -> List[Dict[str, Any]]:
+    def _get_notes_from_midi(self, midi_data: pretty_midi.PrettyMIDI) -> Tuple[List[pretty_midi.Note], float]:
         notes = []
-        beats_per_second = midi_data.estimate_tempo() / 60
+        tempo = midi_data.estimate_tempo()
+        beats_per_second = tempo / 60
         avg_note_time = 1 / beats_per_second
         print(avg_note_time)
         for instrument in midi_data.instruments:
@@ -34,6 +37,7 @@ class SheetGenerator:
                     if note.pitch == instrument.notes[i - 1].pitch:
                         instrument.notes[i - 1].end = note.end
                         continue
+                notes.append(note)
 
                 note_fraction = note_time / avg_note_time
                 note_fraction = min(self.fractions, key=lambda x: abs(x - note_fraction))
@@ -43,70 +47,51 @@ class SheetGenerator:
                     "note": name, "fraction": note_fraction
                 })
 
-        return notes
+        return notes, tempo
 
-    def generate_html_block(self,
-                            output_stream: Optional[stream.Stream] = None,
-                            midi_data: Optional[pretty_midi.PrettyMIDI] = None,
-                            ):
-        if output_stream is None:
-            if midi_data is None:
-                raise TypeError(" if output is not given, ")
-            output_stream = self.__call__(midi_data)
-
-        GEX = musicxml.m21ToXml.GeneralObjectExporter(output_stream)
-        out = GEX.parse()
-        musicxml_code = out.decode('utf-8')
-
-        lilypond_file_path = 'data/output.ly'
-        output_stream.write('lilypond', fp=lilypond_file_path)
-
-        # Convert LilyPond to PNG using LilyPond command line tool
-        output_image_path = 'data/output.png'
-        self.env.run(['lilypond', '--png', '-o', output_image_path, lilypond_file_path])
-
-        html_code = f"""
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-              <meta charset="UTF-8">
-              <meta http-equiv="X-UA-Compatible" content="IE=edge">
-              <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <title>Music21 Stream Rendering</title>
-              <script src="https://cdnjs.cloudflare.com/ajax/libs/vexflow/1.4.21/vexflow-min.js"></script>
-            </head>
-            <body>
-              <div id="notation"></div>
-              <script>
-                var vf = new Vex.Flow.Factory({"{renderer: { {elementId: 'notation'} }}"});
-                var score = vf.EasyScore();
-                var system = vf.System();
-            
-                // Parse MusicXML code
-                var xmlString = '{musicxml_code}';
-                var parser = new DOMParser();
-                var xmlDoc = parser.parseFromString(xmlString, 'application/xml');
-            
-                // Render the MusicXML using VexFlow
-                system.addStave({"{voices: [score.voice(score.notes(xmlDoc))]}"}).draw();
-              </script>
-            </body>
-            </html>
-            """
-        with open("data/temp.html", "w") as f:
-            f.write(html_code)
-        return html_code
-
-    def __call__(self, midi_data: pretty_midi.PrettyMIDI, output_path: Optional[Union[Path, str]] = None):
-        notes = self._get_notes_from_midi(midi_data)
+    def _preprocess_notes(self, notes: List[pretty_midi.Note], tempo: float) -> stream.Stream:
+        m21_notes = []
+        notes_in_one_sec = tempo / 60
+        one_time = round(1 / notes_in_one_sec, 2)
         stream1 = stream.Stream()
-        for _note in notes:
-            m21_note = Note(_note["note"], quarterLength=_note["fraction"])
+
+        for i, _note in enumerate(notes):
+            options = self.fractions
+            pause_options = self.pause_fractions
+
+            name = pretty_midi.note_number_to_name(_note.pitch)
+            rest = None
+            if i + 1 < len(notes):
+                next_note = notes[i + 1]
+
+                if next_note.start < _note.end:
+                    _note.end = next_note.start
+                pause_fraction = (next_note.start - _note.end) / one_time
+                if pause_fraction > 0.7:
+                    rest_fraction = min(pause_options, key=lambda x: abs(x - pause_fraction))
+                    rest = music21.note.Rest(quarterLength=rest_fraction)
+
+            note_time = _note.end - _note.start
+            note_fraction = note_time / one_time
+
+            note_fraction = min(options, key=lambda x: abs(x - note_fraction))
+            m21_note = Note(name, quarterLength=note_fraction)
+
+            m21_notes.append(m21_note)
             stream1.append(m21_note)
+
+            if rest is not None:
+                stream1.append(rest)
+
+        return stream1
+
+    def __call__(self, midi_data: pretty_midi.PrettyMIDI, output_path: Optional[Union[Path, str]] = None) -> str:
+        notes, tempo = self._get_notes_from_midi(midi_data)
+        stream1 = self._preprocess_notes(notes, tempo)
 
         if output_path is None:
             output_path = self.default_path
 
         stream1.write('musicxml', fp=output_path)
 
-        return stream1
+        return str(output_path)
