@@ -1,13 +1,24 @@
 services:
-  migrations:
-    build: .
-    command: python3 manage.py migrate
-  web:
-    build: .
-    command: python3 manage.py runserver 0.0.0.0:8000
+#  migrations:
+#    build: .
+#    command: python3 manage.py migrate
+#  web:
+#    build: .
+#    command: python3 manage.py runserver 0.0.0.0:8000
+#    volumes:
+#      - ./kids_app:/app
+#    ports:
+#      - "8000:8000"
+#    depends_on:
+#      - migrations
+  frontend:
+    build:
+      context: frontend
+      dockerfile: Dockerfile
     volumes:
-      - ./kids_app:/app
+      - ./frontend/app:/frontend/app
+    command: npm start
     ports:
-      - "8000:8000"
-    depends_on:
-      - migrations
+      - "3000:3000"
+#    depends_on:
+#      - web
