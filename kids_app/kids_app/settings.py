@@ -128,7 +128,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 MEDIA_URL = '/media/'
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = 'media'
+
 
 musescoreDirectPNGPath = os.getenv("musescoreDirectPNGPath", r'C:\Program Files\MuseScore 4\bin\MuseScore4.exe')
 musicxmlPath = os.getenv("musicxmlPath", r'C:\Program Files\MuseScore 4\bin\MuseScore4.exe')

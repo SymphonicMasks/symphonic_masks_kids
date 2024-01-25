@@ -9,7 +9,7 @@ class BasicPitcher:
         self.default_path = default_path
 
     def __call__(self, audio_file_path: Union[Path, str], output_path: Optional[Union[Path, str]]):
-        model_output, midi_data, note_events = predict(audio_file_path)
+        model_output, midi_data, note_events = predict(audio_file_path, onset_threshold=0.6)
 
         if output_path is None:
             output_path = self.default_path

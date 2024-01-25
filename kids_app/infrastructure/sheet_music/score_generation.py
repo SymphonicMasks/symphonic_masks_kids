@@ -3,9 +3,11 @@ from pathlib import Path
 from typing import List, Optional, Union, Tuple
 
 import music21.stream
-from django.conf import settings
+# from django.conf import settings
+from kids_app import settings
+
 import pretty_midi
-from music21 import environment, stream
+from music21 import environment, stream, converter
 from music21.note import Note
 
 
@@ -24,7 +26,7 @@ class SheetGenerator:
         us['musicxmlPath'] = settings.musicxmlPath
         us['lilypondPath'] = settings.lilypondPath
 
-    def _get_notes_from_midi(self, midi_data: pretty_midi.PrettyMIDI) -> Tuple[List[pretty_midi.Note], float]:
+    def get_notes_from_midi(self, midi_data: pretty_midi.PrettyMIDI) -> Tuple[List[pretty_midi.Note], float]:
         notes = []
         tempo = midi_data.estimate_tempo()
         beats_per_second = tempo / 60
@@ -33,19 +35,14 @@ class SheetGenerator:
         for instrument in midi_data.instruments:
             for i, note in enumerate(instrument.notes):
                 note_time = note.end - note.start
-                if note_time / avg_note_time < 0.1 and i > 0:
-                    if note.pitch == instrument.notes[i - 1].pitch:
-                        instrument.notes[i - 1].end = note.end
-                        continue
+                # if note_time / avg_note_time < 0.1 and i > 0:
+                #     if note.pitch == instrument.notes[i - 1].pitch:
+                #         instrument.notes[i - 1].end = note.end
+                #         continue
                 notes.append(note)
 
                 note_fraction = note_time / avg_note_time
                 note_fraction = min(self.fractions, key=lambda x: abs(x - note_fraction))
-                name = pretty_midi.note_number_to_name(note.pitch)
-
-                notes.append({
-                    "note": name, "fraction": note_fraction
-                })
 
         return notes, tempo
 
@@ -85,8 +82,15 @@ class SheetGenerator:
 
         return stream1
 
+    @staticmethod
+    def read_xml(xml_path: Path) -> stream.Stream:
+        xml_score = converter.parse(xml_path)
+        xml_stream = stream.Stream(xml_score.parts[0].flatten().notesAndRests)
+
+        return xml_stream
+
     def __call__(self, midi_data: pretty_midi.PrettyMIDI, output_path: Optional[Union[Path, str]] = None) -> str:
-        notes, tempo = self._get_notes_from_midi(midi_data)
+        notes, tempo = self.get_notes_from_midi(midi_data)
         stream1 = self._preprocess_notes(notes, tempo)
 
         if output_path is None:

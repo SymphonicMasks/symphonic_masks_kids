@@ -11,3 +11,7 @@ class Song(models.Model):
     @property
     def midi_path(self):
         return f"data/midi/{self.title}.midi"
+
+    @property
+    def xml_path(self):
+        return f"data/xml/{self.title}.xml"

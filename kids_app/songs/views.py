@@ -1,14 +1,17 @@
 import os.path
+from pathlib import Path
+
 from pretty_midi import PrettyMIDI
 
 from bs4 import BeautifulSoup
 from .utlilts import handle_uploaded_file, audio_to_midi
 from .forms import UploadFileForm
 from django.db import IntegrityError
-from django.conf import settings
+# from django.conf import settings
+from kids_app import settings
 from django.shortcuts import render, redirect, reverse
 from .models import Song
-from infrastructure import basic_pitcher, music21_renderer
+from infrastructure import basic_pitcher, music21_renderer, MusicSubmission
 
 
 def index(request):
@@ -70,7 +73,7 @@ def upload_audio(request):
             return redirect(f"/song/{song.id}", request)
 
         song_id = request.POST["song"]
-        song = Song.objects.get(pk=song_id)
+        song = Song.objects.get(pk=1)
 
         user_id = 1
         midi_template = f"user_midi/{user_id}/{song.title}.html"
@@ -79,3 +82,27 @@ def upload_audio(request):
         music21_renderer.generate_html_block(midi_data=midi_data)
         request.session["user_id"] = 1
         return redirect(f"/song/{song.id}", request)
+
+
+def record(request):
+    if request.method == "GET":
+        form = UploadFileForm()
+        return render(request, "recorder.html", {"form": form})
+
+    else:
+        file = request.FILES["file"]
+        file_url = handle_uploaded_file(file)
+        file_name = file.name.split(".")[0]
+        media = settings.MEDIA_ROOT
+        midi_data = basic_pitcher(media + "/" + file.name, "data/midi/" + file_name + ".midi")
+
+        song = Song.objects.get(pk=1)
+        user_id = 1
+        original_stream = music21_renderer.read_xml("data/xml/k.xml")
+        user_notes, tempo = music21_renderer.get_notes_from_midi(midi_data)
+        viz_path = media + f"/submissions/{user_id}/{song.id}.xml"
+
+        submission = MusicSubmission(original_stream,  user_notes, tempo, viz_path)
+        submission.make_viz(make_svg=True)
+
+        return redirect(f"/test/", request, {"score_path": viz_path.replace("xml", "svg")})
