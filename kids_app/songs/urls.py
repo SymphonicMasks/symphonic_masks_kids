@@ -25,6 +25,8 @@ urlpatterns = [
     path("", index),
     path("song/<int:song_id>", view_song),
     path("upload/", upload_audio),
+    path("upload/recording/", upload_recording),
     path("test/", record),
+    path("results/", show_result),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,10 +1,11 @@
 import os.path
 from pathlib import Path
 
+from django.http import HttpResponse
 from pretty_midi import PrettyMIDI
 
 from bs4 import BeautifulSoup
-from .utlilts import handle_uploaded_file, audio_to_midi
+from .utlilts import handle_uploaded_file, audio_to_midi, handle_user_recording
 from .forms import UploadFileForm
 from django.db import IntegrityError
 # from django.conf import settings
@@ -102,7 +103,38 @@ def record(request):
         user_notes, tempo = music21_renderer.get_notes_from_midi(midi_data)
         viz_path = media + f"/submissions/{user_id}/{song.id}.xml"
 
-        submission = MusicSubmission(original_stream,  user_notes, tempo, viz_path)
+        submission = MusicSubmission(original_stream, user_notes, tempo, viz_path)
         submission.make_viz(make_svg=True)
 
-        return redirect(f"/test/", request, {"score_path": viz_path.replace("xml", "svg")})
+        return redirect(reverse("songs:show_result", kwargs={"score_path": viz_path}))
+
+
+def upload_recording(request):
+    if request.method == "POST":
+        file = request.FILES["file"]
+        session_id = request.session.session_key
+        handle_user_recording(file, session_id)
+
+        return HttpResponse(content="ok", status=200)
+
+
+def show_result(request):
+    if request.method == "GET":
+        redirect("/test/", request)
+    else:
+        file = request.FILES["file"]
+        file_url = handle_uploaded_file(file)
+        file_name = file.name.split(".")[0]
+        media = settings.MEDIA_ROOT
+        midi_data = basic_pitcher(media + "/" + file.name, "data/midi/" + file_name + ".midi")
+
+        song = Song.objects.get(pk=1)
+        user_id = 1
+        original_stream = music21_renderer.read_xml("data/xml/k.xml")
+        user_notes, tempo = music21_renderer.get_notes_from_midi(midi_data)
+        viz_path = media + f"/submissions/{user_id}/{song.id}.xml"
+
+        submission = MusicSubmission(original_stream, user_notes, tempo, viz_path)
+        submission.make_viz(make_svg=False)
+
+        return render(request, "results.html", {"score_path": viz_path})
