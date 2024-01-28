@@ -1,38 +1,61 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Main</title>
-    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-2.0.2.min.js"
-            integrity="sha384-ufR9RFnRs6lniiaFvtJziE0YeidtAgBRH6ux2oUItHw5WTvE1zuk9uzhUU/FJXDp"
-            crossorigin="anonymous"></script>
-    <script type="text/javascript">
-        Bokeh.set_log_level("info");
-    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="{% static 'js/opensheetmusicdisplay.min.js' %}"></script>
 </head>
-<body>
-<div>
-    {% if score_path %}
-        <img src="{{score_path}}" alt="">
-    {% endif %}
+<body class="bg-gray-700">
+
+<div class="bg-gray-700">
+    <form action="/results/" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div style="padding: 5px">
+            <label for="song">Выбирай песню: </label>
+            <select name="song" id="song">
+                <option value="">...</option>
+                {% for song in songs %}
+                    <option value="{{ song.id }}">{{ song.title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div style="padding: 5px">
+            {{ form }}
+        </div>
+        <div style="padding: 6px">
+            <input type="submit" value="Load song">
+        </div>
+    </form>
+    <button id="startRecording">Start</button>
+    <button id="stopRecording">Stop</button>
+    <br>
+    <p id="isRecording">Click start button to record</p>
+    <audio src="" id="audioElement" controls></audio>
 </div>
-<form action="" method="POST" enctype="multipart/form-data">
-    {% csrf_token %}
-    <div style="padding: 5px">
-        <label for="song">Выбирай песню: </label>
-        <select name="song" id="song">
-            <option value="">...</option>
-            {% for song in songs %}
-                <option value="{{ song.id }}">{{ song.title }}</option>
-            {% endfor %}
-        </select>
-    </div>
-    <div style="padding: 5px">
-        {{ form }}
-    </div>
-    <div style="padding: 6px">
-        <input type="submit" value="Load song">
-    </div>
-</form>
 </body>
+<script src="{% static 'js/recorder.js' %}">
+
+</script>
+<script>
+    {% if score_path %}
+
+        var osmd = new opensheetmusicdisplay.OpenSheetMusicDisplay("osmdContainer");
+        osmd.setOptions({
+            backend: "svg",
+            drawTitle: false,
+            drawingParameters: "compacttight" // don't display title, composer etc., smaller margins
+        });
+        osmd
+            .load("/media/submissions/1/1.xml")
+            .then(
+                function () {
+                    osmd.render();
+                }
+            );
+    {% endif%}
+
+</script>
 </html>

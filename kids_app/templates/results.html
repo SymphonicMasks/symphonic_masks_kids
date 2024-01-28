@@ -1,0 +1,42 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Results</title>
+
+</head>
+<script src="{% static 'js/node_modules/music21j/releases/music21.debug.js' %}"></script>
+<script src="{% static 'js/opensheetmusicdisplay.min.js' %}"></script>
+<link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+
+<body class="bg-gray-700">
+<div class="bg-gray-700">
+    {% if score_path %}
+        <div id="osmdContainer"/>
+    {% endif %}
+</div>
+
+</body>
+
+<script>
+    {% if score_path %}
+
+        var osmd = new opensheetmusicdisplay.OpenSheetMusicDisplay("osmdContainer");
+        osmd.setOptions({
+            backend: "svg",
+            drawTitle: false,
+            drawingParameters: "compacttight" // don't display title, composer etc., smaller margins
+        });
+        osmd
+            .load("/{{ score_path }}")
+            .then(
+                function () {
+                    osmd.render();
+                }
+            );
+    {% endif%}
+
+</script>
+</html>
