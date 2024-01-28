@@ -92,8 +92,8 @@ class MusicSubmission:
 
         stream_error.write('musicxml', fp=self.viz_path)
         if make_svg:
-            svg = self.viz_path.replace(".xml", ".svg")
+            svg = self.viz_path.replace(".xml", ".pdf")
             conv = converter.subConverters.ConverterLilypond()
-            conv.write(stream_error, fmt='lilypond', fp=svg, subformats=['svg'])
+            conv.write(stream_error, fmt='lilypond', fp=svg, subformats=['pdf'])
 
         return results
