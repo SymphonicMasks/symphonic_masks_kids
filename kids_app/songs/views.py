@@ -100,11 +100,10 @@ def record(request):
         media = settings.MEDIA_ROOT
         midi_data = basic_pitcher(media + "/" + file.name, "data/midi/" + file_name + ".midi")
 
-        song = Song.objects.get(pk=1)
         user_id = 1
         original_stream = music21_renderer.read_xml("data/xml/k.xml")
         user_notes, tempo = music21_renderer.get_notes_from_midi(midi_data)
-        viz_path = media + f"/submissions/{user_id}/{song.id}.xml"
+        viz_path = media + f"/submissions/{user_id}/1.xml"
 
         submission = MusicSubmission(original_stream, user_notes, tempo, viz_path)
         submission.make_viz(make_svg=True)
@@ -131,7 +130,6 @@ def show_result(request):
         media = settings.MEDIA_ROOT
         midi_data = basic_pitcher(media + "/" + file_name, "data/midi/" + file_name + ".midi")
 
-        song = Song.objects.get(pk=1)
         user_id = 1
         original_stream = music21_renderer.read_xml("data/xml/k.xml")
         user_notes, tempo = music21_renderer.get_notes_from_midi(midi_data)
@@ -143,7 +141,7 @@ def show_result(request):
             request.session["errors"] = "Ты так мало играл(("
             return redirect("/", request)
 
-        viz_path = media + f"/submissions/{user_id}/{song.id}.xml"
+        viz_path = media + f"/submissions/{user_id}/1.xml"
         submission = MusicSubmission(original_stream, user_notes, tempo, viz_path)
         submission.make_viz(make_svg=False)
 
