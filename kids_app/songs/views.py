@@ -88,7 +88,10 @@ def upload_audio(request):
 def record(request):
     if request.method == "GET":
         form = UploadFileForm()
-        return render(request, "recorder.html", {"form": form})
+        context = {"form": form}
+        if request.session.has_key("errors"):
+            context["errors"] = request.session["errors"]
+        return render(request, "recorder.html", context)
 
     else:
         file = request.FILES["file"]
@@ -120,20 +123,27 @@ def upload_recording(request):
 
 def show_result(request):
     if request.method == "GET":
-        redirect("/test/", request)
+        redirect("/", request)
     else:
         file = request.FILES["file"]
         file_url = handle_uploaded_file(file)
-        file_name = file.name.split(".")[0]
+        file_name = file_url.split("/")[-1]
         media = settings.MEDIA_ROOT
-        midi_data = basic_pitcher(media + "/" + file.name, "data/midi/" + file_name + ".midi")
+        midi_data = basic_pitcher(media + "/" + file_name, "data/midi/" + file_name + ".midi")
 
         song = Song.objects.get(pk=1)
         user_id = 1
         original_stream = music21_renderer.read_xml("data/xml/k.xml")
         user_notes, tempo = music21_renderer.get_notes_from_midi(midi_data)
-        viz_path = media + f"/submissions/{user_id}/{song.id}.xml"
+        if tempo == 0:
+            request.session["errors"] = "Что-то пошло не так, может ты играл слишком тихо?"
+            return redirect("/", request)
 
+        if len(user_notes) < 10:
+            request.session["errors"] = "Ты так мало играл(("
+            return redirect("/", request)
+
+        viz_path = media + f"/submissions/{user_id}/{song.id}.xml"
         submission = MusicSubmission(original_stream, user_notes, tempo, viz_path)
         submission.make_viz(make_svg=False)
 

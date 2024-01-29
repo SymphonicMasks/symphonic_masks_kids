@@ -22,7 +22,7 @@ from .views import *
 
 
 urlpatterns = [
-    path("", index),
+    path("", record),
     path("song/<int:song_id>", view_song),
     path("upload/", upload_audio),
     path("upload/recording/", upload_recording),

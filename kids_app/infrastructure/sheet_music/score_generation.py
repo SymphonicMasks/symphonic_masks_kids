@@ -28,7 +28,12 @@ class SheetGenerator:
 
     def get_notes_from_midi(self, midi_data: pretty_midi.PrettyMIDI) -> Tuple[List[pretty_midi.Note], float]:
         notes = []
-        tempo = midi_data.estimate_tempo()
+        try:
+            tempo = midi_data.estimate_tempo()
+        except ValueError:
+            tempo = 0
+            return notes, tempo
+
         beats_per_second = tempo / 60
         avg_note_time = 1 / beats_per_second
         print(avg_note_time)
