@@ -26,7 +26,8 @@ function initFunction() {
         }
     }
 
-    isRecording.textContent = "Recording...";
+    isRecording.className = ""
+
     //
 
     let audioChunks = [];
@@ -49,23 +50,6 @@ function initFunction() {
         rec.start();
         rec.ondataavailable = (e) => {
             audioChunks.push(e.data);
-            if (rec.state == "inactive") {
-                let blob = new Blob(audioChunks, {type: "audio/wav"})
-
-                var xhr = new XMLHttpRequest();
-                xhr.onload = function (e) {
-                    if (this.readyState === 4) {
-                        console.log("Server returned: ", e.target.responseText);
-                    }
-                };
-                var fd = new FormData();
-                fd.append("file", blob, "audio");
-                xhr.open("POST", "/upload/recording/", true);
-                xhr.send(fd);
-                console.log(blob);
-                console.log(f);
-                document.getElementById("audioElement").src = URL.createObjectURL(blob);
-            }
         };
     }
 
@@ -80,6 +64,17 @@ function initFunction() {
     // Stoping handler
     document.getElementById("stopRecording").addEventListener("click", (e) => {
         rec.stop();
-        isRecording.textContent = "Click play button to start listening";
+        let blob = new Blob(audioChunks, {type: "audio/wav"})
+        let file = new File([blob], "audio.wav", {type: "audio/wav"});
+        let container = new DataTransfer();
+        if (file.size > 0) {
+            container.items.add(file);
+            console.log(container)
+            document.querySelector('#id_file').files = container.files;
+            isRecording.className = "hidden";
+
+        }
+
+
     });
 }
