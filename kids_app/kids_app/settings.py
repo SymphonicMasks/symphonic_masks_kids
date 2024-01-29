@@ -135,6 +135,6 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = 'media'
 
 
-musescoreDirectPNGPath = os.getenv("musescoreDirectPNGPath", r'C:\Program Files\MuseScore 4\bin\MuseScore4.exe')
-musicxmlPath = os.getenv("musicxmlPath", r'C:\Program Files\MuseScore 4\bin\MuseScore4.exe')
-lilypondPath = os.getenv("lilypondPath", r'C:\Program Files\lilypond-2.24.3\bin\lilypond.exe')
+musescoreDirectPNGPath = os.getenv("musescoreDirectPNGPath", "")
+musicxmlPath = os.getenv("musicxmlPath", "")
+lilypondPath = os.getenv("lilypondPath", "")
