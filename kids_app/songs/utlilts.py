@@ -1,37 +1,26 @@
 import os.path
+import pathlib
+
 from basic_pitch.inference import predict
-
-
-from bs4 import BeautifulSoup
-
 from django.core.files.storage import FileSystemStorage
-#
-#
-# def midi_to_block(midi_path: str, target_path):
-#     pm = PrettyMIDI(midi_path)
-#     pm.estimate_beat_start()
-#     plotter = Plotter()
-#     pm.get_piano_roll()
-#     plotter.save(pm, target_path)
-#
-#     with open(target_path, "r") as f:
-#         html_doc = f
-#         soup = BeautifulSoup(html_doc, "html.parser")
-#         soup.find('head').decompose()
-#         soup.html.unwrap()
-#         soup.body.unwrap()
-#
-#     with open(target_path, "w") as f:
-#         f.write(
-#             str(soup).replace("<!DOCTYPE html>", "")
-#         )
-#
-#     return target_path
+from django.conf import settings
 
 
 def handle_uploaded_file(file):
     fss = FileSystemStorage()
     file = fss.save(file.name, file)
+    file_url = fss.url(file)
+
+    return file_url
+
+
+def handle_user_recording(file, session_id: str) -> str:
+    fss = FileSystemStorage()
+    media_path = settings.MEDIA_ROOT
+    # user_path = f"{media_path}/submissions/{session_id}/"
+    # pathlib.Path(user_path).mkdir(exist_ok=True)
+
+    file = fss.save(f"submissions/{session_id}/audio.wav", file)
     file_url = fss.url(file)
 
     return file_url
