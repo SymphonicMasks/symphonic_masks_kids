@@ -91,6 +91,7 @@ def record(request):
         context = {"form": form}
         if request.session.has_key("errors"):
             context["errors"] = request.session["errors"]
+            del request.session["errors"]
         return render(request, "recorder.html", context)
 
     else:
