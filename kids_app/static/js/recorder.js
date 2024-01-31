@@ -3,6 +3,7 @@ document
     .addEventListener("click", initFunction);
 
 let isRecording = document.getElementById("isRecording");
+let isSaved = document.getElementById("isSaved");
 
 function initFunction() {
     // Display recording
@@ -27,8 +28,7 @@ function initFunction() {
     }
 
     isRecording.className = ""
-
-    //
+    isSaved.className = "hidden"
 
     let audioChunks = [];
     let rec;
@@ -53,15 +53,6 @@ function initFunction() {
         };
     }
 
-    function startusingBrowserMicrophone(boolean) {
-        getUserMedia({audio: boolean}).then((stream) => {
-            handlerFunction(stream);
-        });
-    }
-
-    startusingBrowserMicrophone(true);
-
-    // Stoping handler
     document.getElementById("stopRecording").addEventListener("click", (e) => {
         rec.stop();
         let blob = new Blob(audioChunks, {type: "audio/wav"})
@@ -72,9 +63,18 @@ function initFunction() {
             console.log(container)
             document.querySelector('#id_file').files = container.files;
             isRecording.className = "hidden";
+            isSaved.className = ""
 
         }
-
-
     });
+
+    function startusingBrowserMicrophone(boolean) {
+        getUserMedia({audio: boolean}).then((stream) => {
+            handlerFunction(stream);
+        });
+
+    }
+
+    startusingBrowserMicrophone(true);
+    // Stoping handler
 }
