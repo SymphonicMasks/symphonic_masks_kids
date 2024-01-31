@@ -138,3 +138,5 @@ MEDIA_ROOT = 'media'
 musescoreDirectPNGPath = os.getenv("musescoreDirectPNGPath", "")
 musicxmlPath = os.getenv("musicxmlPath", "")
 lilypondPath = os.getenv("lilypondPath", "")
+
+SECURE_CROSS_ORIGIN_OPENER_POLICY = None
