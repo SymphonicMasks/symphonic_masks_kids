@@ -41,7 +41,10 @@ class MusicSubmission:
             self.user_notes.pop(0)
             name = pretty_midi.note_number_to_name(self.user_notes[0].pitch)
 
+        unplayed_notes = len(original_notes) - len(self.user_notes)
+
         for i, _note in enumerate(self.user_notes):
+            stream_error.notes[i].style.color = "green"
             if i >= len(original_notes):
                 break
 
@@ -63,8 +66,9 @@ class MusicSubmission:
 
                     elif i + 1 < len(original_notes):
                         if name == original_notes[i + 1]:
-                            error = f"DUR_{note_fraction != fractions[i]}"
-                            stream_error.notes[i].style.color = "yellow"
+                            # error = f"DUR_{note_fraction != fractions[i]}"
+                            # stream_error.notes[i].style.color = "yellow"
+
                             results.append({"index": i, "note": name, "duration": note_fraction, "error": error})
 
                             continue
@@ -87,8 +91,16 @@ class MusicSubmission:
             elif note_fraction != fractions[i]:
                 error = f"DUR_{note_fraction != fractions[i]}"
                 stream_error.notes[i].style.color = "yellow"
+            else:
+                stream_error.notes[i].style.color = "green"
 
             results.append({"index": i, "note": name, "duration": note_fraction, "error": error})
+
+        if unplayed_notes > 0:
+            orig_size = len(stream_error.notes)
+            for i in range(orig_size-unplayed_notes, orig_size):
+                orig_note = stream_error.notes[i]
+                orig_note.style.color = "red"
 
         stream_error.write('musicxml', fp=self.viz_path)
         if make_svg:
