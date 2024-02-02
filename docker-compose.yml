@@ -11,4 +11,4 @@ services:
     environment:
       - musescoreDirectPNGPath=
       - musicxmlPath=
-      - lilypondPath=/usr/bin/lilypond
+      - lilypondPath=

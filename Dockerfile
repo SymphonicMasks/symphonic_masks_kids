@@ -3,10 +3,10 @@ FROM mwader/static-ffmpeg:latest
 FROM airdock/lilypond:latest
 LABEL authors="mulsha"
 
-FROM python:3.10
+FROM python:3.8
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
-ENV lilypondPath="/usr/bin/lilypond"
+ENV lilypondPath=""
 
 RUN apt update -y && apt upgrade -y
 RUN apt install ffmpeg -y
