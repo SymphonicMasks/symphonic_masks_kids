@@ -33,12 +33,14 @@ class MusicSubmission:
 
         notes_in_one_sec = self.tempo / 60
         one_time = round(1 / notes_in_one_sec, 2)
+        if len(self.user_notes) == 0:
+            return []
         name = pretty_midi.note_number_to_name(self.user_notes[0].pitch)
 
         results = []
 
         while name != original_notes[0]:
-            if len(self.user_notes) == 0:
+            if len(self.user_notes) == 1:
                 return []
             self.user_notes.pop(0)
             name = pretty_midi.note_number_to_name(self.user_notes[0].pitch)
