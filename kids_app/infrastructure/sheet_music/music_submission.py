@@ -42,17 +42,20 @@ class MusicSubmission:
             name = pretty_midi.note_number_to_name(self.user_notes[0].pitch)
 
         unplayed_notes = len(original_notes) - len(self.user_notes)
-
+        original_index = 0
         for i, _note in enumerate(self.user_notes):
-            stream_error.notes[i].style.color = "green"
+            if original_index >= len(original_notes):
+                break
             if i >= len(original_notes):
                 break
+
+            stream_error.notes[i].style.color = "green"
 
             error = None
             name = pretty_midi.note_number_to_name(_note.pitch)
             note_time = _note.end - _note.start
             note_fraction = note_time / one_time
-
+            note_fraction = min([0.2, 0.5, 0.8, 1, 1.5, 2, 4], key=lambda x: abs(x - note_fraction))
             if note_fraction < 0.1:
                 print("continue if < 0.2", note_fraction)
                 continue
@@ -70,11 +73,13 @@ class MusicSubmission:
                             # stream_error.notes[i].style.color = "yellow"
 
                             results.append({"index": i, "note": name, "duration": note_fraction, "error": error})
+                            original_index += 1
 
                             continue
                 if i > 0:
                     prev_name = pretty_midi.note_number_to_name(self.user_notes[i - 1].pitch)
                     if prev_name == name:
+                        original_index += 1
                         continue
                 error = "NOTE"
                 wrong_note = Note(name, quarterLength=fractions[i])
@@ -95,6 +100,7 @@ class MusicSubmission:
                 stream_error.notes[i].style.color = "green"
 
             results.append({"index": i, "note": name, "duration": note_fraction, "error": error})
+            original_index += 1
 
         if unplayed_notes > 0:
             orig_size = len(stream_error.notes)
