@@ -38,9 +38,9 @@ class MusicSubmission:
         results = []
 
         while name != original_notes[0]:
-            self.user_notes.pop(0)
             if len(self.user_notes) == 0:
                 return []
+            self.user_notes.pop(0)
             name = pretty_midi.note_number_to_name(self.user_notes[0].pitch)
 
         unplayed_notes = len(original_notes) - len(self.user_notes)
