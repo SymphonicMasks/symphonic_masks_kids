@@ -39,6 +39,8 @@ class MusicSubmission:
 
         while name != original_notes[0]:
             self.user_notes.pop(0)
+            if len(self.user_notes) == 0:
+                return []
             name = pretty_midi.note_number_to_name(self.user_notes[0].pitch)
 
         unplayed_notes = len(original_notes) - len(self.user_notes)
@@ -104,7 +106,7 @@ class MusicSubmission:
 
         if unplayed_notes > 0:
             orig_size = len(stream_error.notes)
-            for i in range(orig_size-unplayed_notes, orig_size):
+            for i in range(orig_size - unplayed_notes, orig_size):
                 orig_note = stream_error.notes[i]
                 orig_note.style.color = "red"
 

@@ -144,6 +144,10 @@ def show_result(request):
 
         viz_path = media + f"/submissions/{user_id}/1.xml"
         submission = MusicSubmission(original_stream, user_notes, tempo, viz_path)
-        submission.make_viz(make_svg=False)
+        res = submission.make_viz(make_svg=False)
+
+        if len(res) == 0:
+            request.session["errors"] = "Не было обнаружено первой правильной ноты("
+            return redirect("/", request)
 
         return render(request, "results.html", {"score_path": viz_path})
