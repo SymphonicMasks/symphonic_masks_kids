@@ -4,7 +4,7 @@ from typing import List, Tuple, Optional
 from dataclasses import dataclass
 
 import pretty_midi
-from music21 import stream, chord, converter
+from music21 import stream, chord, converter, key
 from music21.note import Note
 
 
@@ -14,9 +14,13 @@ class MusicSubmission:
     user_notes: List[pretty_midi.Note]
     tempo: int
     viz_path: str
+    key: Optional[List[str]] = None
 
     def create_skeleton(self) -> Tuple[List[str], List[float]]:
+        if self.key is not None:
+            self.original_stream.keySignature = key.Key(self.key[0], self.key[1])
         stream_notes = self.original_stream.notes
+
         fractions = []
         original_notes = []
         for note in stream_notes:

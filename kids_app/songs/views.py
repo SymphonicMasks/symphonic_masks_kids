@@ -106,7 +106,7 @@ def record(request):
         user_notes, tempo = music21_renderer.get_notes_from_midi(midi_data)
         viz_path = media + f"/submissions/{user_id}/1.xml"
 
-        submission = MusicSubmission(original_stream, user_notes, tempo, viz_path)
+        submission = MusicSubmission(original_stream, user_notes, tempo, viz_path, ['D', 'Minor'])
         submission.make_viz(make_svg=True)
 
         return redirect(reverse("songs:show_result", kwargs={"score_path": viz_path}))
@@ -126,10 +126,10 @@ def show_result(request):
         redirect("/", request)
     else:
         file = request.FILES["file"]
-        file_url = handle_uploaded_file(file)
-        file_name = file_url.split("/")[-1]
+        session_id = request.session.session_key
+        file_url = handle_user_recording(file, session_id)
         media = settings.MEDIA_ROOT
-        midi_data = basic_pitcher(media + "/" + file_name, "data/midi/" + file_name + ".midi")
+        midi_data = basic_pitcher(file_url.replace("/", "", 1), "data/midi/" + session_id + ".midi")
 
         user_id = 1
         original_stream = music21_renderer.read_xml("data/xml/k.xml")

@@ -1,14 +1,15 @@
 import os.path
 import pathlib
+from typing import Optional
 
 from basic_pitch.inference import predict
 from django.core.files.storage import FileSystemStorage
 from django.conf import settings
 
 
-def handle_uploaded_file(file):
+def handle_uploaded_file(file, path: Optional[str] = None):
     fss = FileSystemStorage()
-    file = fss.save(file.name, file)
+    file = fss.save(path + file.name, file)
     file_url = fss.url(file)
 
     return file_url
@@ -17,8 +18,8 @@ def handle_uploaded_file(file):
 def handle_user_recording(file, session_id: str) -> str:
     fss = FileSystemStorage()
     media_path = settings.MEDIA_ROOT
-    # user_path = f"{media_path}/submissions/{session_id}/"
-    # pathlib.Path(user_path).mkdir(exist_ok=True)
+    user_path = f"{media_path}/submissions/{session_id}/"
+    pathlib.Path(user_path).mkdir(exist_ok=True)
 
     file = fss.save(f"submissions/{session_id}/audio.wav", file)
     file_url = fss.url(file)
