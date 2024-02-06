@@ -143,7 +143,7 @@ def show_result(request):
         user_path = media + f"/submissions/{user_id}/"
         pathlib.Path(user_path).mkdir(exist_ok=True)
 
-        original_stream = music21_renderer.read_xml("data/xml/k1.xml")
+        original_stream = music21_renderer.read_xml("data/xml/k2.xml")
         user_notes, tempo = music21_renderer.get_notes_from_midi(midi_data)
         if tempo == 0:
             request.session["errors"] = "Что-то пошло не так, может ты играл слишком тихо?"
