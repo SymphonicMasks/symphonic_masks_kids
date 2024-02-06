@@ -61,7 +61,7 @@ class SheetGenerator:
             options = self.fractions
             pause_options = self.pause_fractions
 
-            name = pretty_midi.note_number_to_name(_note.pitch)
+            name = _note.pitch
             rest = None
             if i + 1 < len(notes):
                 next_note = notes[i + 1]

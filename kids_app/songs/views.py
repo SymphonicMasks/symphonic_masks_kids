@@ -137,7 +137,7 @@ def show_result(request):
         try:
             midi_data = basic_pitcher(file_url.replace("/", "", 1), "data/midi/" + session_id + ".midi")
         except EOFError as eof:
-            redirect("/", request)
+            return redirect("/", request)
 
         user_id = request.session.session_key
         user_path = media + f"/submissions/{user_id}/"
