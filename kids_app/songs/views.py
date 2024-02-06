@@ -1,5 +1,7 @@
 import os.path
 import pathlib
+import random
+import string
 from pathlib import Path
 
 from django.http import HttpResponse
@@ -128,6 +130,8 @@ def show_result(request):
     else:
         file = request.FILES["file"]
         session_id = request.session.session_key
+        if session_id is None:
+            session_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
         file_url = handle_user_recording(file, session_id)
         media = settings.MEDIA_ROOT
         midi_data = basic_pitcher(file_url.replace("/", "", 1), "data/midi/" + session_id + ".midi")
