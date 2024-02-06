@@ -134,7 +134,10 @@ def show_result(request):
             session_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
         file_url = handle_user_recording(file, session_id)
         media = settings.MEDIA_ROOT
-        midi_data = basic_pitcher(file_url.replace("/", "", 1), "data/midi/" + session_id + ".midi")
+        try:
+            midi_data = basic_pitcher(file_url.replace("/", "", 1), "data/midi/" + session_id + ".midi")
+        except EOFError as eof:
+            redirect("/", request)
 
         user_id = request.session.session_key
         user_path = media + f"/submissions/{user_id}/"
