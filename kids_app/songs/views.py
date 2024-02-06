@@ -1,4 +1,5 @@
 import os.path
+import pathlib
 from pathlib import Path
 
 from django.http import HttpResponse
@@ -102,11 +103,11 @@ def record(request):
         midi_data = basic_pitcher(media + "/" + file.name, "data/midi/" + file_name + ".midi")
 
         user_id = 1
-        original_stream = music21_renderer.read_xml("data/xml/k.xml")
+        original_stream = music21_renderer.read_xml("data/xml/k1.xml")
         user_notes, tempo = music21_renderer.get_notes_from_midi(midi_data)
         viz_path = media + f"/submissions/{user_id}/1.xml"
 
-        submission = MusicSubmission(original_stream, user_notes, tempo, viz_path, ['D', 'Minor'])
+        submission = MusicSubmission(original_stream, user_notes, tempo, viz_path, ['G', 'Major'])
         submission.make_viz(make_svg=True)
 
         return redirect(reverse("songs:show_result", kwargs={"score_path": viz_path}))
@@ -131,8 +132,11 @@ def show_result(request):
         media = settings.MEDIA_ROOT
         midi_data = basic_pitcher(file_url.replace("/", "", 1), "data/midi/" + session_id + ".midi")
 
-        user_id = 1
-        original_stream = music21_renderer.read_xml("data/xml/k.xml")
+        user_id = request.session.session_key
+        user_path = media + f"/submissions/{user_id}/"
+        pathlib.Path(user_path).mkdir(exist_ok=True)
+
+        original_stream = music21_renderer.read_xml("data/xml/k1.xml")
         user_notes, tempo = music21_renderer.get_notes_from_midi(midi_data)
         if tempo == 0:
             request.session["errors"] = "Что-то пошло не так, может ты играл слишком тихо?"
@@ -142,8 +146,8 @@ def show_result(request):
             request.session["errors"] = "Ты так мало играл(("
             return redirect("/", request)
 
-        viz_path = media + f"/submissions/{user_id}/1.xml"
-        submission = MusicSubmission(original_stream, user_notes, tempo, viz_path)
+        viz_path = user_path + "1.xml"
+        submission = MusicSubmission(original_stream, user_notes, tempo, viz_path, ['G', 'Major'])
         res = submission.make_viz(make_svg=False)
 
         if len(res) == 0:

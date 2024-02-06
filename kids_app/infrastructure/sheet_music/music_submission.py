@@ -14,7 +14,7 @@ class MusicSubmission:
     user_notes: List[pretty_midi.Note]
     tempo: int
     viz_path: str
-    key: Optional[List[str]] = None
+    key: Optional[List[str]]
 
     def create_skeleton(self) -> Tuple[List[str], List[float]]:
         if self.key is not None:
@@ -116,6 +116,8 @@ class MusicSubmission:
                 orig_note = stream_error.notes[i]
                 orig_note.style.color = "red"
 
+        if self.key is not None:
+            stream_error.keySignature = key.Key(self.key[0], self.key[1])
         stream_error.write('musicxml', fp=self.viz_path)
         if make_svg:
             svg = self.viz_path.replace(".xml", ".pdf")
