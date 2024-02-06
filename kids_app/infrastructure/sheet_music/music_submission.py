@@ -63,7 +63,7 @@ class MusicSubmission:
             name = pretty_midi.note_number_to_name(_note.pitch)
             note_time = _note.end - _note.start
             note_fraction = note_time / one_time
-            note_fraction = min([0.2, 0.5, 0.8, 1, 1.5, 2, 4], key=lambda x: abs(x - note_fraction))
+            note_fraction = min([0, 0.5, 1, 1.5, 2, 2.5, 4], key=lambda x: abs(x - note_fraction))
             if note_fraction < 0.1:
                 print("continue if < 0.2", note_fraction)
                 continue
